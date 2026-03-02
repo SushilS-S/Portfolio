@@ -1,5 +1,7 @@
 'use strict';
 
+console.log('[script.js] loaded');
+
 // ─── HELPERS ────────────────────────────────────────────────────────────────
 
 const $ = (selector, scope = document) => scope.querySelector(selector);
@@ -13,51 +15,23 @@ const removeActiveClass = el => el.classList.remove('active');
 const sidebar    = $('[data-sidebar]');
 const sidebarBtn = $('[data-sidebar-btn]');
 
-sidebarBtn.addEventListener('click', () => {
-  sidebar.classList.toggle('active');
-});
-
-// ─── TESTIMONIALS MODAL ───────────────────────────────────────────────────────
-
-const testimonialItems = $$('[data-testimonials-item]');
-const modal            = $('[data-modal-container]');
-const overlay          = $('[data-overlay]');
-const closeBtn         = $('[data-modal-close-btn]');
-const modalImg         = $('[data-modal-img]');
-const modalTitle       = $('[data-modal-title]');
-const modalText        = $('[data-modal-text]');
-
-function openModal(item) {
-  modalImg.src     = $('[data-testimonials-avatar]', item).src;
-  modalImg.alt     = $('[data-testimonials-avatar]', item).alt;
-  modalTitle.textContent = $('[data-testimonials-title]', item).textContent;
-  modalText.innerHTML    = $('[data-testimonials-text]', item).innerHTML;
-  addActiveClass(modal);
+if (sidebarBtn) {
+  sidebarBtn.addEventListener('click', () => {
+    sidebar.classList.toggle('active');
+  });
 }
-
-testimonialItems.forEach(item => {
-  item.addEventListener('click', () => openModal(item));
-});
-
-[overlay, closeBtn].forEach(el => {
-  el.addEventListener('click', () => removeActiveClass(modal));
-});
-
-// Close modal on Escape key
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && modal.classList.contains('active')) {
-    removeActiveClass(modal);
-  }
-});
 
 // ─── TAB NAVIGATION ───────────────────────────────────────────────────────────
 
 const navLinks = $$('[data-nav-link]');
 const pages    = $$('[data-page]');
 
+console.log('[script.js] navLinks found:', navLinks.length, 'pages found:', pages.length);
+
 navLinks.forEach(link => {
   link.addEventListener('click', () => {
     const target = link.textContent.trim().toLowerCase();
+    console.log('[script.js] nav clicked:', target);
 
     navLinks.forEach(removeActiveClass);
     pages.forEach(removeActiveClass);
@@ -98,7 +72,7 @@ filterBtns.forEach(btn => {
 });
 
 // Mobile select dropdown
-if (selectBox) {
+if (selectBox && selectList) {
   selectBox.addEventListener('click', () => {
     selectList.classList.toggle('active');
     selectBox.querySelector('.select-icon ion-icon').setAttribute(
@@ -111,8 +85,8 @@ if (selectBox) {
 selectItems.forEach(item => {
   item.addEventListener('click', () => {
     const value = item.textContent.trim();
-    selectValue.textContent = value;
-    selectList.classList.remove('active');
+    if (selectValue) selectValue.textContent = value;
+    if (selectList) selectList.classList.remove('active');
     filterProjects(value);
     // Keep desktop buttons in sync
     filterBtns.forEach(btn => {
@@ -123,33 +97,8 @@ selectItems.forEach(item => {
 
 // Close select on outside click
 document.addEventListener('click', e => {
-  if (selectBox && !selectBox.parentElement.contains(e.target)) {
+  if (selectBox && selectList && !selectBox.parentElement.contains(e.target)) {
     selectList.classList.remove('active');
   }
 });
 
-// ─── CONTACT FORM — ENABLE/DISABLE BUTTON ────────────────────────────────────
-
-const form    = $('[data-form]');
-const formBtn = $('[data-form-btn]');
-const inputs  = $$('[data-form-input]');
-
-if (form && formBtn) {
-  inputs.forEach(input => {
-    input.addEventListener('input', () => {
-      formBtn.disabled = !form.checkValidity();
-    });
-  });
-
-  form.addEventListener('submit', e => {
-    e.preventDefault();
-    // Replace this with a real form service (e.g. Formspree) when deploying
-    formBtn.textContent = 'Message Sent!';
-    formBtn.disabled = true;
-    setTimeout(() => {
-      form.reset();
-      formBtn.innerHTML = '<ion-icon name="paper-plane"></ion-icon><span>Send Message</span>';
-      formBtn.disabled = true;
-    }, 3000);
-  });
-}
